@@ -6,7 +6,7 @@ const trpc = initTRPC.context<Context>().create();
 export const router = trpc.router;
 export const procedure = trpc.procedure;
 
-export const protectedProcedure = trpc.procedure.use(({ ctx, next }) => {
+export const userProcedure = trpc.procedure.use(({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
@@ -36,7 +36,7 @@ export const protectedProcedure = trpc.procedure.use(({ ctx, next }) => {
   });
 });
 
-export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+export const adminProcedure = procedure.use(async ({ ctx, next }) => {
   const user = ctx.session?.user;
 
   if (!user || user.role !== "ADMIN") {
@@ -46,5 +46,10 @@ export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
     });
   }
 
-  return next({ ctx });
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+    },
+  });
 });
