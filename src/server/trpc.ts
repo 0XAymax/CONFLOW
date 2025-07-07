@@ -14,6 +14,13 @@ export const protectedProcedure = trpc.procedure.use(({ ctx, next }) => {
     });
   }
 
+  if (ctx.session.user.role !== "USER") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have permission to access this resource",
+    });
+  }
+
   if (!ctx.session.user.isVerified) {
     throw new TRPCError({
       code: "FORBIDDEN",
