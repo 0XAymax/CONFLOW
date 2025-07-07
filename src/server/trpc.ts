@@ -6,7 +6,7 @@ const trpc = initTRPC.context<Context>().create();
 export const router = trpc.router;
 export const procedure = trpc.procedure;
 
-export const userProcedure = trpc.procedure.use(({ ctx, next }) => {
+export const protectedProcedure = procedure.use(({ ctx, next }) => {
   if (!ctx.session?.user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
@@ -14,6 +14,15 @@ export const userProcedure = trpc.procedure.use(({ ctx, next }) => {
     });
   }
 
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+    },
+  });
+});
+
+export const userProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.session.user.role !== "USER") {
     throw new TRPCError({
       code: "FORBIDDEN",
@@ -28,28 +37,16 @@ export const userProcedure = trpc.procedure.use(({ ctx, next }) => {
     });
   }
 
-  return next({
-    ctx: {
-      ...ctx,
-      session: ctx.session,
-    },
-  });
+  return next({ ctx });
 });
 
-export const adminProcedure = procedure.use(async ({ ctx, next }) => {
-  const user = ctx.session?.user;
-
-  if (!user || user.role !== "ADMIN") {
+export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  if (ctx.session.user.role !== "ADMIN") {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Admin access required",
     });
   }
 
-  return next({
-    ctx: {
-      ...ctx,
-      session: ctx.session,
-    },
-  });
+  return next({ ctx });
 });
