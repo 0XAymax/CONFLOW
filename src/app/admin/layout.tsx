@@ -21,7 +21,7 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
             Conference Requests
           </Link>
           <Link
-            href="/admin/Inbox"
+            href="/admin/inbox"
             className="text-[#64748b] hover:text-[#0f172a] transition-colors font-medium"
           >
             Inbox
