@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -9,14 +10,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { trpc } from "@/server/client";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function AllConferences() {
-  const conferences = [
-    { id: "1", acronym: "CONF2024", name: "Chair" },
-    { id: "2", acronym: "CONF2023", name: "Reviewer" },
-    { id: "3", acronym: "SIDECONF2023", name: "Author" },
-  ];
+  const {
+    data: conferences,
+    isLoading,
+    error,
+  } = trpc.conference.getAllPublicConferences.useQuery();
+
+  if (isLoading || !conferences) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    toast.error("An unexpected error occured: " + error.message);
+  }
 
   return (
     <div className="main-content-height bg-gradient-to-br from-background via-muted/20 to-muted/40 p-8">
@@ -45,22 +56,24 @@ export default function AllConferences() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {conferences.map((item, index) => (
+                {conferences.map((conf) => (
                   <TableRow
-                    key={index}
+                    key={conf.id}
                     className="group border-border/30 hover:bg-muted/50 transition-all duration-300 ease-in-out"
                   >
                     <TableCell className="py-6">
-                      <Link href={`/dashboard/conference/${item.id}`}>
+                      <Link href={`/dashboard/conference/${conf.id}`}>
                         <p className="text-lg font-medium group-hover:text-foreground/90 transition-colors">
-                          {item.acronym}
+                          {conf.acronym}
                         </p>
                       </Link>
                     </TableCell>
                     <TableCell className="py-6">
-                      <p className="text-lg font-medium group-hover:text-foreground/90 transition-colors">
-                        {item.name}
-                      </p>
+                      <Link href={`/dashboard/conference/${conf.id}`}>
+                        <p className="text-lg font-medium group-hover:text-foreground/90 transition-colors">
+                          {conf.title}
+                        </p>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}
