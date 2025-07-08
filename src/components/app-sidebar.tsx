@@ -1,56 +1,21 @@
-import { Compass, Globe,Inbox, LogOut, ShieldCheck, UserCircle } from "lucide-react"
+
+import { Compass, Globe,Inbox, LogOut, LucideIcon, ShieldCheck, UserCircle } from "lucide-react"
 
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarHeader
 } from "@/components/ui/sidebar"
 import Logo from "./Logo"
 import NavItem from "./nav-item"
+interface NavItemInterface {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+}
 
-const items = [
-  {
-    title: "All Conferences",
-    url: "/dashboard/all-conferences",
-    icon: Globe,
-  },
-  {
-    title: "My Conferences",
-    url: "/dashboard/my-conferences",
-    icon: Compass,
-  },
-  {
-    title: "My Roles",
-    url: "/dashboard/my-roles",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Inbox",
-    url: "/dashboard/inbox",
-    icon: Inbox,
-  },
-]
-const secondaryItems = [
-  {
-    title: "My Account",
-    url: "/dashboard/account",
-    icon: UserCircle,
-  },
-  {
-    title: "Logout",
-    url: "/dashboard/sign-out",
-    icon: LogOut,
-  },
-]
-
-export function AppSidebar() {
+export function AppSidebar({items, secondaryItems}: { items: NavItemInterface[], secondaryItems: NavItemInterface[] }) {
   return (
     <Sidebar>
         <SidebarHeader>
