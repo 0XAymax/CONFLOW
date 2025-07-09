@@ -1,4 +1,5 @@
 // import { TRPCError } from "@trpc/server";
+import { sendNotification } from "@/lib/notification";
 import {
   userProcedure,
   router,
@@ -93,19 +94,29 @@ export const conferenceRouter = router({
   createConference: userProcedure
     .input(
       z.object({
-        title: z.string(),
-        acronym: z.string(),
-        description: z.string(),
-        locationVenue: z.string(),
-        locationCity: z.string(),
-        locationCountry: z.string(),
-        callForPapers: z.string(),
-        websiteUrl: z.string().url().optional(),
-        startDate: z.date(),
-        endDate: z.date(),
-        abstractDeadline: z.date(),
-        submissionDeadline: z.date(),
-        cameraReadyDeadline: z.date(),
+        title: z.string().min(1, "Title is required"),
+        acronym: z.string().min(1, "Acronym is required"),
+        description: z.string().min(1, "Description is required"),
+        locationVenue: z.string().min(1, "Venue is required"),
+        locationCity: z.string().min(1, "City is required"),
+        locationCountry: z.string().min(1, "Country is required"),
+        callForPapers: z.string().min(1, "Call for papers is required"),
+        websiteUrl: z.string().url().optional().or(z.literal("")),
+        startDate: z
+          .union([z.date(), z.string()])
+          .transform((val) => (typeof val === "string" ? new Date(val) : val)),
+        endDate: z
+          .union([z.date(), z.string()])
+          .transform((val) => (typeof val === "string" ? new Date(val) : val)),
+        abstractDeadline: z
+          .union([z.date(), z.string()])
+          .transform((val) => (typeof val === "string" ? new Date(val) : val)),
+        submissionDeadline: z
+          .union([z.date(), z.string()])
+          .transform((val) => (typeof val === "string" ? new Date(val) : val)),
+        cameraReadyDeadline: z
+          .union([z.date(), z.string()])
+          .transform((val) => (typeof val === "string" ? new Date(val) : val)),
         isPublic: z.boolean().default(false),
         researchAreas: z.record(z.string(), z.array(z.string())),
       })
@@ -114,6 +125,20 @@ export const conferenceRouter = router({
       const conferenceRequest = ctx.prisma.conference.create({
         data: { ...input, mainChairId: ctx.session.user.id },
       });
+
+      const admins = await ctx.prisma.user.findMany({
+        where: { role: "ADMIN" },
+        select: { id: true, email: true, firstName: true, lastName: true },
+      });
+      const user = ctx.session.user;
+      for (const admin of admins) {
+        sendNotification(
+          admin,
+          "Conference Creation Request",
+          `A new conference request has been created by ${user.firstName} ${user.lastName} (${user.email}).
+          You can review it in the admin panel.`
+        );
+      }
       return conferenceRequest;
     }),
 });
