@@ -15,7 +15,7 @@ export default function ProtectedPage({
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/sign-in");
     if (status === "authenticated" && session.user.role !== "USER")
-      router.replace("/sign-in");
+      router.replace("/admin");
   }, [status, session, router]);
   if (status === "loading" || status === "unauthenticated") {
     return <LoadingSpinner />;
