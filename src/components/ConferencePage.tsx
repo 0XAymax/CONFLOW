@@ -35,6 +35,7 @@ export default function ConferencePage({
   editable?: boolean;
 }) {
   const { conferenceId } = useParams<{ conferenceId: string }>();
+  console.log("Conference ID:", conferenceId);
   const nextRouter = useRouter();
 
   const {
@@ -215,7 +216,7 @@ export default function ConferencePage({
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="w-full mx-auto p-6 space-y-6">
       {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-start justify-between">
