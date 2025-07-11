@@ -29,13 +29,9 @@ import { TRPCError } from "@trpc/server";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
-export default function ConferencePage({
-  editable = false,
-}: {
-  editable?: boolean;
-}) {
+export default function ConferencePage() {
   const { conferenceId } = useParams<{ conferenceId: string }>();
-  console.log("Conference ID:", conferenceId);
+  const { data: session } = useSession();
   const nextRouter = useRouter();
 
   const {
@@ -45,6 +41,8 @@ export default function ConferencePage({
   } = trpc.conference.getConference.useQuery(conferenceId, {
     enabled: !!conferenceId,
   });
+
+  const editable = session?.user.id === conference?.mainChairId;
 
   // State for editable fields
   const [editableData, setEditableData] = useState<{
@@ -123,8 +121,6 @@ export default function ConferencePage({
         nextRouter.push("/admin/conference-requests");
       },
     });
-
-  const { data: session } = useSession();
 
   const handleSave = async () => {
     if (!editableData || !conferenceId) return;
