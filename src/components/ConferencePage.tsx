@@ -43,6 +43,13 @@ export default function ConferencePage() {
   });
 
   const editable = session?.user.id === conference?.mainChairId;
+  // Debug logging for session and main chair comparison
+  console.log("Session user:", session?.user);
+  console.log("Main chair ID:", conference?.mainChairId);
+  console.log(
+    "Are they the same?",
+    session?.user.id === conference?.mainChairId
+  );
 
   // State for editable fields
   const [editableData, setEditableData] = useState<{
@@ -294,7 +301,8 @@ export default function ConferencePage() {
           </div>
 
           {session?.user.role === "USER" &&
-            conference.status === "APPROVED" && (
+            conference.status === "APPROVED" &&
+            conference.mainChairId !== session?.user.id && (
               <Link href="/dashboard/conference/new-submission">
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   <FileText className="h-4 w-4 mr-2" />
@@ -595,7 +603,8 @@ export default function ConferencePage() {
           </Card>
 
           {/* Admin Info (if admin) */}
-          {session?.user.role === "ADMIN" && conference.mainChair && (
+          {(session?.user.role === "ADMIN" ||
+            conference.mainChairId === session?.user.id) && (
             <>
               <Card>
                 <CardHeader>
