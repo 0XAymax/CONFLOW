@@ -295,7 +295,7 @@ export default function ConferencePage() {
 
           {session?.user.role === "USER" &&
             conference.status === "APPROVED" && (
-              <Link href="/dashboard/conference/new-submission">
+              <Link href={`/dashboard/conference/${conferenceId}/new-submission`}>
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   <FileText className="h-4 w-4 mr-2" />
                   Make a Submission
