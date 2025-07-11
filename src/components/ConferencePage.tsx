@@ -43,6 +43,13 @@ export default function ConferencePage() {
   });
 
   const editable = session?.user.id === conference?.mainChairId;
+  // Debug logging for session and main chair comparison
+  console.log("Session user:", session?.user);
+  console.log("Main chair ID:", conference?.mainChairId);
+  console.log(
+    "Are they the same?",
+    session?.user.id === conference?.mainChairId
+  );
 
   // State for editable fields
   const [editableData, setEditableData] = useState<{
@@ -250,7 +257,8 @@ export default function ConferencePage() {
               </h1>
             )}
             <div className="flex items-center gap-4">
-              {session?.user.role === "ADMIN" && (
+              {(session?.user.role === "ADMIN" ||
+                session?.user.id === conference.mainChairId) && (
                 <Badge
                   variant="outline"
                   className={`${getStatusColor(conference.status)} font-medium`}
@@ -502,7 +510,8 @@ export default function ConferencePage() {
                           rel="noopener noreferrer"
                           className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
                         >
-                          Visit Website <ExternalLink className="h-3 w-3" />
+                          {conference.websiteUrl}{" "}
+                          <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
                     </div>
@@ -595,7 +604,8 @@ export default function ConferencePage() {
           </Card>
 
           {/* Admin Info (if admin) */}
-          {session?.user.role === "ADMIN" && conference.mainChair && (
+          {(session?.user.role === "ADMIN" ||
+            conference.mainChairId === session?.user.id) && (
             <>
               <Card>
                 <CardHeader>
