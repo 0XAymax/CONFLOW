@@ -6,12 +6,18 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { getData } from "country-list";
+import { ControllerRenderProps } from "react-hook-form";
+type Props = {
+  field: ControllerRenderProps<any, any>; 
+  isSubmitting?: boolean;
+  isPending?: boolean;
+};
 
-export default function CountrySelect(
+export default function CountrySelect({
   field,
-  isSubmitting: boolean = false,
-  isPending: boolean = false
-) {
+  isSubmitting = false,
+  isPending = false
+}: Props) {
   return (
     <Select
       onValueChange={field.onChange}
