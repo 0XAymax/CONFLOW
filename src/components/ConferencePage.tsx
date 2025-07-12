@@ -508,7 +508,7 @@ export default function ConferencePage() {
                           href={conference.websiteUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          className="text-sm text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
                         >
                           {conference.websiteUrl}{" "}
                           <ExternalLink className="h-3 w-3" />
