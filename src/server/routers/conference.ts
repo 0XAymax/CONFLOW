@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 type ResearchAreas = Record<string, string[]>;
+import DOMPurify from "isomorphic-dompurify";
 
 export const conferenceRouter = router({
   getAllPublicConferences: userProcedure.query(async ({ ctx }) => {
@@ -222,6 +223,7 @@ export const conferenceRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      input.callForPapers = DOMPurify.sanitize(input.callForPapers);
       const conferenceRequest = ctx.prisma.conference.create({
         data: { ...input, mainChairId: ctx.session.user.id },
       });
