@@ -82,7 +82,7 @@ export async function sendNotificationToChairs(
 
     return notifications;
   } catch (error) {
-    console.error("Failed to send notifications to chairs:", error);
+    console.error("Failed to send notifications to chairs:", error.message);
     throw new Error("Failed to send notifications to chairs");
   }
 }
