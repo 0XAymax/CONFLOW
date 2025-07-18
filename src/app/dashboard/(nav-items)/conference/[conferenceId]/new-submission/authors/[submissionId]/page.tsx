@@ -132,10 +132,7 @@ export default function AuthorForm() {
   const linkToCurrentUser = (index: number) => {
     if (!session?.user) return;
 
-    // Debug: Check what data is available
-    console.log("Session user data:", session.user);
-    console.log("Country:", session.user.country);
-    console.log("Affiliation:", session.user.affiliation);
+    // Debug: Check what data is available (removed debug logs for production safety)
 
     // Update the form with current user's data
     remove(index);
