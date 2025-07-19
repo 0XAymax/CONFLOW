@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css"; // Import Quill styles
 import ResearchAreasEditor from "@/components/ResearchAreasEditor";
 
 export default function ConferencePage() {
@@ -170,7 +171,10 @@ export default function ConferencePage() {
     }
   };
 
-  const handleInputChange = (field: string, value: string | boolean | Record<string, string[]>) => {
+  const handleInputChange = (
+    field: string,
+    value: string | boolean | Record<string, string[]>
+  ) => {
     setEditableData((prev) => ({
       ...prev!,
       [field]: value,
@@ -355,7 +359,6 @@ export default function ConferencePage() {
             <CardContent>
               {editable && isEditing ? (
                 <div>
-                  <Label htmlFor="callForPapers">Call for Papers</Label>
                   <ReactQuill
                     id="callForPapers"
                     value={editableData?.callForPapers || ""}
@@ -393,7 +396,7 @@ export default function ConferencePage() {
                   <ResearchAreasEditor
                     researchAreas={editableData?.researchAreas || {}}
                     setResearchAreas={(updater) => {
-                      if (typeof updater === 'function') {
+                      if (typeof updater === "function") {
                         const currentAreas = editableData?.researchAreas || {};
                         const newAreas = updater(currentAreas);
                         handleInputChange("researchAreas", newAreas);
