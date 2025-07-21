@@ -31,6 +31,49 @@ export const submissionRouter = router({
 
       return submissions || [];
     }),
+  getConferenceSubmissionsByAuthor: userProcedure
+    .input(
+      z.object({
+        conferenceId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { conferenceId } = input;
+
+      const submissions = await ctx.prisma.submission.findMany({
+        where: {
+          conferenceId,
+          // The user must be one of the linked SubmissionAuthors of the paper
+          submissionAuthors: {
+            some: {
+              userId: ctx.session.user.id,
+            },
+          },
+        },
+        select: {
+          id: true,
+          title: true,
+          abstract: true,
+          primaryArea: true,
+          secondaryArea: true,
+          keywords: true,
+          paperFilePath: true,
+          paperFileName: true,
+          updatedAt: true,
+          status: true,
+          conference: {
+            select: {
+              id: true,
+              title: true,
+              acronym: true,
+              status: true,
+            },
+          },
+        },
+      });
+
+      return submissions || [];
+    }),
   addSubmissionAuthors: userProcedure
     .input(
       z.object({
@@ -42,7 +85,7 @@ export const submissionRouter = router({
       const { authors, submissionId } = input;
 
       // Map authors to users if possible here
-      await ctx.prisma.submissonAuthor.createMany({
+      await ctx.prisma.submissionAuthor.createMany({
         data: authors.map((author) => ({
           ...author,
           submissionId,
