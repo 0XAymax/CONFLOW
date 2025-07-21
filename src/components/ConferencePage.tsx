@@ -30,6 +30,8 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css"; // Import Quill styles
+import ResearchAreasEditor from "@/components/ResearchAreasEditor";
 
 export default function ConferencePage() {
   const { conferenceId } = useParams<{ conferenceId: string }>();
@@ -169,7 +171,10 @@ export default function ConferencePage() {
     }
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (
+    field: string,
+    value: string | boolean | Record<string, string[]>
+  ) => {
     setEditableData((prev) => ({
       ...prev!,
       [field]: value,
@@ -312,14 +317,31 @@ export default function ConferencePage() {
               )}
             </div>
           </div>
-          {canSubmit(conference) && (
-            <Link href={`/dashboard/conference/${conferenceId}/new-submission`}>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                <FileText className="h-4 w-4 mr-2" />
-                Make a Submission
-              </Button>
-            </Link>
-          )}
+          <div className="flex gap-2">
+            {canSubmit(conference) && (
+              <Link
+                href={`/dashboard/conference/${conferenceId}/new-submission`}
+              >
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Make a Submission
+                </Button>
+              </Link>
+            )}
+            {editable && (
+              <Link
+                href={`/dashboard/conference/${conferenceId}/chair-dashboard`}
+              >
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/10"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Chair Dashboard
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {editable && isEditing ? (
@@ -354,7 +376,6 @@ export default function ConferencePage() {
             <CardContent>
               {editable && isEditing ? (
                 <div>
-                  <Label htmlFor="callForPapers">Call for Papers</Label>
                   <ReactQuill
                     id="callForPapers"
                     value={editableData?.callForPapers || ""}
@@ -384,8 +405,28 @@ export default function ConferencePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {ResearchAreasSection(
-                conference.researchAreas as Record<string, string[]> | null
+              {editable && isEditing ? (
+                <div>
+                  <Label className="text-sm font-medium text-foreground mb-4 block">
+                    Edit Research Areas
+                  </Label>
+                  <ResearchAreasEditor
+                    researchAreas={editableData?.researchAreas || {}}
+                    setResearchAreas={(updater) => {
+                      if (typeof updater === "function") {
+                        const currentAreas = editableData?.researchAreas || {};
+                        const newAreas = updater(currentAreas);
+                        handleInputChange("researchAreas", newAreas);
+                      } else {
+                        handleInputChange("researchAreas", updater);
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                ResearchAreasSection(
+                  conference.researchAreas as Record<string, string[]> | null
+                )
               )}
             </CardContent>
           </Card>
