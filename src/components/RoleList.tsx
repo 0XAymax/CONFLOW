@@ -21,6 +21,15 @@ export default function RoleList({
   }>;
   title: string | undefined;
 }) {
+  const getLink = (role: string, conferenceId: string) => {
+    if (role === "AUTHOR") {
+      return `/dashboard/conference/${conferenceId}/your-submissions`;
+    }
+    if (role === "REVIEWER") {
+      return `/dashboard/conference/${conferenceId}/your-reviews`;
+    }
+    return `/dashboard/conference/${conferenceId}`;
+  };
   return (
     <div className="main-content-height bg-gradient-to-br from-background via-muted/20 to-muted/40 p-8">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -47,28 +56,38 @@ export default function RoleList({
               </TableHeader>
               <TableBody>
                 {conferences ? (
-                  conferences.map((item, index) => (
-                    <TableRow
-                      key={index}
-                      className="group border-border/30 hover:bg-muted/50 transition-all duration-300 ease-in-out"
-                    >
-                      <TableCell className="py-6">
-                        {/* The route should change based on role!! */}
-                        <Link href={`/dashboard/conference/${item.id}`}>
-                          <p className="text-lg font-medium group-hover:text-foreground/90 transition-colors">
-                            {item.acronym}
-                          </p>
-                        </Link>
-                      </TableCell>
-                      <TableCell className="py-6">
-                        <Link href={`/dashboard/conference/${item.id}`}>
-                          <p className="text-lg font-medium group-hover:text-foreground/90 transition-colors">
-                            {item.role}
-                          </p>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  conferences
+                    .filter(
+                      (item, index, self) =>
+                        index ===
+                        self.findIndex(
+                          (conf) =>
+                            conf.acronym === item.acronym &&
+                            conf.role === item.role
+                        )
+                    )
+                    .map((item, index) => (
+                      <TableRow
+                        key={index}
+                        className="group border-border/30 hover:bg-muted/50 transition-all duration-300 ease-in-out"
+                      >
+                        <TableCell className="py-6">
+                          {/* The route should change based on role!! */}
+                          <Link href={getLink(item.role, item.id)}>
+                            <p className="text-lg font-medium group-hover:text-foreground/90 transition-colors">
+                              {item.acronym}
+                            </p>
+                          </Link>
+                        </TableCell>
+                        <TableCell className="py-6">
+                          <Link href={getLink(item.role, item.id)}>
+                            <p className="text-lg font-medium group-hover:text-foreground/90 transition-colors">
+                              {item.role}
+                            </p>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))
                 ) : (
                   <TableRow>
                     <TableCell colSpan={2} className="text-center py-6">
