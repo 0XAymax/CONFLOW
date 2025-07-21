@@ -382,7 +382,7 @@ export const submissionRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to update submission. Please try again.",
         });
-      }),
+      },
   getSubmissionsByConferenceId: chairProcedure
     .input(z.object({ conferenceId: z.string() }))
     .query(async ({ ctx, input }) => {
