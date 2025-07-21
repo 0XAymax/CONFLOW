@@ -14,6 +14,7 @@ const authorSchema = z.object({
   country: z.string().min(1, "Country is required"),
   affiliation: z.string().min(1, "Affilliation is required"),
   isCorresponding: z.boolean(),
+  userId: z.string().optional(),
 });
 export const submissionRouter = router({
   getConferenceSubmissions: chairProcedure
@@ -260,6 +261,104 @@ export const submissionRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create submission. Please try again.",
+        });
+      }
+    }),
+  updatePaperSubmission: verifiedNoConferenceRoleProcedure
+    .input(
+      z.object({
+        submissionId: z.string(),
+        title: z.string(),
+        abstract: z.string(),
+        primaryArea: z.string(),
+        secondaryArea: z.string(),
+        keywords: z.array(z.string()),
+        paperFilePath: z.string().optional(),
+        paperFileName: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const {
+        title,
+        abstract,
+        primaryArea,
+        secondaryArea,
+        keywords,
+        paperFilePath,
+        paperFileName,
+        submissionId,
+      } = input;
+
+      const submissionAuthors = await ctx.prisma.submissionAuthor.findMany({
+        where: { submissionId },
+        select: {
+          userId: true,
+        },
+      });
+
+      const isAuthor = submissionAuthors
+        .map((item) => item.userId)
+        .includes(ctx.session.user.id);
+
+      if (!isAuthor) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to update this submission.",
+        });
+      }
+
+      try {
+        const submission = await ctx.prisma.submission.update({
+          where: { id: submissionId },
+          data: {
+            ...(title && { title }),
+            ...(abstract && { abstract }),
+            ...(primaryArea && { primaryArea }),
+            ...(secondaryArea && { secondaryArea }),
+            ...(keywords && { keywords }),
+            ...(paperFilePath && { paperFilePath }),
+            ...(paperFileName && { paperFileName }),
+          },
+          select: {
+            id: true,
+            conference: {
+              select: {
+                id: true,
+                acronym: true,
+              },
+            },
+          },
+        });
+
+        console.log(`✅ Submission updated successfully: ${submission.id}`);
+
+        sendNotificationToChairs(
+          submission.conference.id,
+          `Updated submission to ${submission.conference.acronym}`,
+          "You have an updated submission to a conference you are a chair of."
+        );
+
+        return {
+          success: true,
+          submissionId: submission.id,
+          message: `Paper updated successfully for ${submission.conference.acronym}`,
+        };
+      } catch (error) {
+        console.error("Error updating submission:", error);
+
+        if (error instanceof Error) {
+          if (error.message.includes("Foreign key constraint")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Invalid user or conference reference. Please refresh and try again.",
+            });
+          }
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update submission. Please try again.",
         });
       }
     }),
