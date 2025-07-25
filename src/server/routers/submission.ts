@@ -4,6 +4,7 @@ import {
   userProcedure,
   router,
   chairProcedure,
+  reviewerProcedure,
   verifiedNoConferenceRoleProcedure,
 } from "../trpc";
 import { sendNotificationToChairs } from "@/lib/notification";
@@ -767,7 +768,7 @@ export const submissionRouter = router({
       }));
     }),
 
-  getMyReviewAssignments: userProcedure
+  getMyReviewAssignments: reviewerProcedure
     .input(
       z.object({
         conferenceId: z.string(),
