@@ -578,7 +578,9 @@ export const submissionRouter = router({
       z.object({
         submissionId: z.string(),
         reviewerId: z.string(),
-        dueDate: z.date(),
+        dueDate: z
+          .union([z.date(), z.string()])
+          .transform((val) => (typeof val === "string" ? new Date(val) : val)),
         conferenceId: z.string(),
       })
     )
@@ -834,7 +836,9 @@ export const submissionRouter = router({
     .input(
       z.object({
         assignmentId: z.string(),
-        dueDate: z.date(),
+        dueDate: z
+          .union([z.date(), z.string()])
+          .transform((val) => (typeof val === "string" ? new Date(val) : val)),
         conferenceId: z.string(),
       })
     )
