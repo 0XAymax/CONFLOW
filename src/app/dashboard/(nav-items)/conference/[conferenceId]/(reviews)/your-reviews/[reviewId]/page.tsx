@@ -21,6 +21,7 @@ import { useProtectedQuery } from "@/hooks/useProtectedQuery";
 import { useState } from "react";
 import { toast } from "sonner";
 import React from "react";
+import Link from "next/link";
 
 export default function ConflowReview() {
   const { conferenceId, reviewId } = useParams<{
@@ -90,12 +91,25 @@ export default function ConflowReview() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="main-content-height bg-background">
       <main className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-2xl font-semibold text-foreground mb-8">
-          Your Review for Submission{" "}
-          <span className="text-muted-foreground">{review.submission.id}</span>
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-semibold text-foreground">
+            Your Review for Submission{" "}
+            <span className="text-muted-foreground">
+              {review.submission.id}
+            </span>{" "}
+            of CONF2024
+          </h1>
+          <Button
+            asChild
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            <Link href={`/dashboard/conference/${conferenceId}`}>
+              Go to Conference
+            </Link>
+          </Button>
+        </div>
 
         {/* Paper Details and Authors */}
         <SubmissionOverview

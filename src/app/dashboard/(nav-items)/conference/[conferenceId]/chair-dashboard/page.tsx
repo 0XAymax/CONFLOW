@@ -37,6 +37,7 @@ import { getName } from "country-list";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProtectedQuery } from "@/hooks/useProtectedQuery";
+import { Button } from "@/components/ui/button";
 
 // New Review Assignment Form Component
 function NewReviewAssignmentForm({
@@ -390,13 +391,21 @@ export default function ConferenceDashboard() {
   }));
   console.log("Available Submissions:", submissions);
   return (
-    <div className="min-h-screen bg-background">
+    <div className="main-content-height bg-background">
       <main className="px-6 py-6">
         {/* Conference Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">
             {conference?.acronym} - {conference?.title}
           </h1>
+          <Button
+            asChild
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            <Link href={`/dashboard/conference/${conferenceId}`}>
+              Go to Conference
+            </Link>
+          </Button>
         </div>
         <Card className="mb-8">
           <CardHeader className="flex flex-row items-center justify-between">
