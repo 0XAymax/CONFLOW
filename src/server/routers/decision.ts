@@ -321,6 +321,11 @@ export const decisionRouter = router({
           ...(submissionId && { submissionId }),
         },
         include: {
+          decision: {
+            select: {
+              id: true,
+            },
+          },
           submission: {
             select: {
               id: true,
@@ -358,6 +363,7 @@ export const decisionRouter = router({
 
       return assignments.map((assignment) => ({
         id: assignment.id,
+        isReviewed: !!assignment.decision,
         submissionId: assignment.submissionId,
         submissionTitle: assignment.submission.title,
         submissionPrimaryArea: assignment.submission.primaryArea,
@@ -629,6 +635,11 @@ export const decisionRouter = router({
       const assignment = await ctx.prisma.decisionAssignment.findUnique({
         where: { id: assignmentId },
         include: {
+          decision: {
+            select: {
+              id: true,
+            },
+          },
           submission: {
             select: {
               id: true,
@@ -698,6 +709,7 @@ export const decisionRouter = router({
       return {
         id: assignment.id,
         submission: assignment.submission,
+        isReviewed: !!assignment.decision,
         chairReviewer: {
           id: assignment.chairReviewer.user.id,
           name: `${assignment.chairReviewer.user.firstName} ${assignment.chairReviewer.user.lastName}`,
