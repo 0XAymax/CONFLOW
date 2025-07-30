@@ -213,6 +213,7 @@ model DecisionAssignment {
   @@index([submissionId])
   @@index([chairRoleId])
   @@index([assignedByRoleId])
+  @@unique([submissionId]) // Ensure one decision per submission
 }
 enum DecStatus {
   ACCEPT
