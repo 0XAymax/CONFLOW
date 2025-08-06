@@ -178,6 +178,12 @@ export const submissionRouter = router({
         select: {
           id: true,
           submittedById: true,
+          conference: {
+            select: {
+              id: true,
+              submissionDeadline: true,
+            },
+          },
           submissionAuthors: {
             select: {
               userId: true,
@@ -190,6 +196,14 @@ export const submissionRouter = router({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Submission not found",
+        });
+      }
+
+      // Check if submission deadline has passed
+      if (new Date() > submission.conference.submissionDeadline) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot update authors after the submission deadline",
         });
       }
 
@@ -251,6 +265,12 @@ export const submissionRouter = router({
         where: { id: submissionId },
         select: {
           id: true,
+          conference: {
+            select: {
+              id: true,
+              submissionDeadline: true,
+            },
+          },
         },
       });
 
@@ -260,6 +280,14 @@ export const submissionRouter = router({
           message: "Submission not found",
         });
       }
+
+      if (new Date() > submission.conference.submissionDeadline) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot add authors after the submission deadline",
+        });
+      }
+
       // Map authors to users if possible here
       await ctx.prisma.submissionAuthor.createMany({
         data: authors.map((author) => ({
@@ -464,6 +492,34 @@ export const submissionRouter = router({
         submissionId,
       } = input;
 
+      const currentSubmission = await ctx.prisma.submission.findUnique({
+        where: { id: submissionId },
+        select: {
+          id: true,
+          conference: {
+            select: {
+              id: true,
+              submissionDeadline: true,
+            },
+          },
+        },
+      });
+
+      if (!currentSubmission) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Submission not found",
+        });
+      }
+
+      // Check if submission deadline has passed
+      if (new Date() > currentSubmission.conference.submissionDeadline) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot update submission after the deadline",
+        });
+      }
+
       const submissionAuthors = await ctx.prisma.submissionAuthor.findMany({
         where: { submissionId },
         select: {
@@ -507,11 +563,11 @@ export const submissionRouter = router({
 
         console.log(`✅ Submission updated successfully: ${submission.id}`);
 
-        sendNotificationToChairs(
-          submission.conference.id,
-          `Updated submission to ${submission.conference.acronym}`,
-          "You have an updated submission to a conference you are a chair of."
-        );
+        // sendNotificationToChairs(
+        //   submission.conference.id,
+        //   `Updated submission to ${submission.conference.acronym}`,
+        //   "You have an updated submission to a conference you are a chair of."
+        // );
 
         return {
           success: true,
