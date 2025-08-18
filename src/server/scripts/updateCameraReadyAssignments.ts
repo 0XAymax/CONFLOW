@@ -60,7 +60,7 @@ async function runTask() {
     ];
     await tx.conference.updateMany({
       where: { id: { in: conferenceIds } },
-      data: { status: "CAMERA_READY_PHASE" }, // Or whatever status indicates this phase
+      data: { status: "CAMERA_READY_PHASE" },
     });
   });
 
