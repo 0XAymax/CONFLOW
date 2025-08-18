@@ -33,7 +33,7 @@ async function runTask() {
             lte: today,
           },
           // Add this to prevent processing already processed conferences
-          status: { not: "CAMERA_READY_PHASE" }, // Assuming you have this status
+          status: { not: "CAMERA_READY_PHASE" },
         },
       },
     },
