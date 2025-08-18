@@ -28,6 +28,8 @@ export interface SubmissionWithAuthors {
   keywords: string[];
   paperFilePath: string;
   paperFileName: string;
+  cameraReadyFilepath: string;
+  cameraReadyFilename: string;
   createdAt: Date;
   submissionAuthors: {
     id: string;
@@ -83,6 +85,8 @@ export const submissionRouter = router({
           keywords: true,
           paperFilePath: true,
           paperFileName: true,
+          cameraReadyFilepath: true,
+          cameraReadyFilename: true,
           updatedAt: true,
           submissionAuthors: {
             select: {
@@ -105,6 +109,8 @@ export const submissionRouter = router({
               title: true,
               acronym: true,
               status: true,
+              submissionDeadline: true,
+              cameraReadyDeadline: true,
             },
           },
         },
@@ -593,6 +599,120 @@ export const submissionRouter = router({
         });
       }
     }),
+  updateCameraReady: verifiedNoConferenceRoleProcedure
+    .input(
+      z.object({
+        submissionId: z.string(),
+        cameraReadyFilepath: z.string().optional(),
+        cameraReadyFilename: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { submissionId, cameraReadyFilepath, cameraReadyFilename } = input;
+      const currentSubmission = await ctx.prisma.submission.findUnique({
+        where: { id: submissionId },
+        select: {
+          id: true,
+          conference: {
+            select: {
+              id: true,
+              submissionDeadline: true,
+              cameraReadyDeadline: true,
+            },
+          },
+        },
+      });
+
+      if (!currentSubmission) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Submission not found",
+        });
+      }
+
+      // Check if the submission deadline has not passed
+      if (new Date() < currentSubmission.conference.submissionDeadline) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot update camera-ready submission before the submission deadline",
+        });
+      }
+
+      // Check if camera-ready deadline has passed
+      if (new Date() > currentSubmission.conference.cameraReadyDeadline) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot update camera-ready submission after the deadline",
+        });
+      }
+
+      // Check if the user is an author of this submission
+      const submissionAuthors = await ctx.prisma.submissionAuthor.findMany({
+        where: { submissionId },
+        select: {
+          userId: true,
+        },
+      });
+
+      const isAuthor = submissionAuthors
+        .map((item) => item.userId)
+        .includes(ctx.session.user.id);
+
+      if (!isAuthor) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not allowed to update this submission.",
+        });
+      }
+
+      try {
+        const submission = await ctx.prisma.submission.update({
+          where: { id: submissionId },
+          data: {
+            cameraReadyFilepath,
+            cameraReadyFilename,
+          },
+          select: {
+            id: true,
+            conference: {
+              select: {
+                id: true,
+                acronym: true,
+              },
+            },
+          },
+        });
+
+        console.log(
+          `✅ Camera-ready submission updated successfully: ${submission.id}`
+        );
+
+        return {
+          success: true,
+          submissionId: submission.id,
+          message: `Camera-ready paper updated successfully for ${submission.conference.acronym}`,
+        };
+      } catch (error) {
+        console.error("Error updating camera-ready submission:", error);
+
+        if (error instanceof Error) {
+          if (error.message.includes("Foreign key constraint")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Invalid user or conference reference. Please refresh and try again.",
+            });
+          }
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "Failed to update camera-ready submission. Please try again.",
+        });
+      }
+    }),
   getSubmissionsByConferenceId: chairProcedure
     .input(z.object({ conferenceId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -609,7 +729,15 @@ export const submissionRouter = router({
           keywords: true,
           paperFilePath: true,
           paperFileName: true,
+          cameraReadyFilepath: true,
+          cameraReadyFilename: true,
           createdAt: true,
+          conference: {
+            select: {
+              id: true,
+              submissionDeadline: true,
+            },
+          },
           submissionAuthors: {
             select: {
               id: true,
